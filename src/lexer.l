@@ -69,6 +69,19 @@ char spec_symbols_dev[] = {
 :       return COLON;
 ;       return SEMICOLON;
 
+NIL|nil         return NIL;
+PACKED|packed   return PACKED;
+OF|of           return OF;
+ARRAY|array     return ARRAY;
+FILE|file       return FILE_;
+SET|set         return SET;
+RECORD|record   return RECORD;
+END|end         return END;
+TYPE|type       return TYPE;
+VAR|var         return VAR;
+CASE|case       return CASE;
+CONST|const     return CONST;
+
 \(\*.*\\*\)       // TODO: оставлять в коде комментарии
 
 [a-zA-Z]*                                { 

@@ -29,6 +29,8 @@
 %token COLON;
 %token SEMICOLON;
 
+%token NIL PACKED OF ARRAY FILE_ SET RECORD END TYPE VAR CASE CONST
+
 %union {
     char* string;
 }
