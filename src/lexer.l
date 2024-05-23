@@ -59,33 +59,34 @@ char spec_symbols_dev[] = {
 \(      return LPAREN;
 \)      return RPAREN;
 ,       return COMMA;
-\.\.    return POINTS;
+\.\.    {print(".."); return POINTS;};
 \^      return CARET;
 \+      return PLUS;
 -       return MINUS;
 \[      return LBRACKET;
 \]      return RBRACKET;
-=       return EQUAL;
+=       {print(yytext); return EQUAL;};
 :       return COLON;
 ;       return SEMICOLON;
 
-NIL|nil         return NIL;
-PACKED|packed   return PACKED;
-OF|of           return OF;
-ARRAY|array     return ARRAY;
-FILE|file       return FILE_;
-SET|set         return SET;
-RECORD|record   return RECORD;
-END|end         return END;
-TYPE|type       return TYPE;
-VAR|var         return VAR;
-CASE|case       return CASE;
-CONST|const     return CONST;
+[Nn][Ii][Ll]                return NIL;
+[Pp][Aa][Cc][Kk][Ee][Dd]    return PACKED;
+[Oo][Ff]                    return OF;
+[Aa][Rr][Rr][Aa][Yy]        return ARRAY;
+[Ff][Ii][Ll][Ee]            return FILE_;
+[Ss][Ee][Tt]                return SET;
+[Rr][Ee][Cc][Oo][Rr][Dd]    return RECORD;
+[Ee][Nn][Dd]                return END;
+[Tt][Yy][Pp][Ee]            return TYPE;
+[Vv][Aa][Rr]                return VAR;
+[Cc][Aa][Ss][Ee]            return CASE;
+[Cc][Oo][Nn][Ss][Tt]        return CONST;
 
 \(\*.*\\*\)       // TODO: оставлять в коде комментарии
 
 [a-zA-Z]*                                { 
                                                 yylval->string = yytext;
+                                                print(yytext);
                                                 return IDENTIFIER;
                                           };
 [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?       { 

@@ -12,7 +12,7 @@ flex: ${LEXER_SRC}
 	flex  -o${BUILD_DIR}/lex.yy.c ${LEXER_SRC}
 
 bison: ${PARSER_SRC}
-	bison ${PARSER_SRC} -H${BUILD_DIR}/y.tab.h -o${BUILD_DIR}/y.tab.c;
+	bison ${PARSER_SRC} -H${BUILD_DIR}/y.tab.h -o${BUILD_DIR}/y.tab.c -Wconflicts-sr -Wconflicts-rr -Wcounterexamples;
 
 gcc: ${BUILD_DIR}/lex.yy.c ${BUILD_DIR}/y.tab.h ${BUILD_DIR}/y.tab.c
 	gcc -o ${BUILD_DIR}/prog ${BUILD_DIR}/*.c -I${BUILD_DIR} -I${INCLUDE_DIR} -w
@@ -26,3 +26,6 @@ tests:
 	./${BUILD_DIR}/prog ${TEST_DIR}/test_${n} ${m} > out
 
 ctests: build tests
+
+# make ctests n=1 – запуск теста 1
+# make crun – запуск на файле input
