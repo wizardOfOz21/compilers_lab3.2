@@ -54,12 +54,6 @@ int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param, yyscan_t scanner);
 void yyerror(YYLTYPE *loc, yyscan_t scanner, long env[26], const char *message);
 %}
 
-%type <string> constant
-%type <string> constant_ident
-%type <string> unsigned_constant_number
-%type <string> sign
-%type <string> ident_list
-
 %%
 
 program: blocks { ns }
@@ -73,24 +67,24 @@ block: type_block | constant_block
 
 /* Определение константы */
 
-constant_block: const { nd } constant_definition_list possible_semicolon { dec }
+constant_block: const_ { nd } constant_definition_list possible_semicolon { dec }
     ;
 
-constant_definition_list: constant_definition_list SEMICOLON { p(";") ns } constant_definition | constant_definition
+constant_definition_list: constant_definition_list _semicolon_ { ns } constant_definition | constant_definition
     ;
 
-constant_definition: IDENTIFIER { p($1) } EQUAL { s p("=") s } constant { f($1) }
+constant_definition: _ident_ { s } _equal_ { s } constant
     ;
 
-constant: sign unsigned_constant_number | unsigned_constant_number | STRING { p($1) } { f($1) }
+constant: sign unsigned_constant_number | unsigned_constant_number | _string_
     ;
 
-unsigned_constant_number: UNSIGNED_NUMBER { p($1)} { f($1) } | constant_ident
+unsigned_constant_number: _unsigned_number_ | constant_ident
     ;
 
-constant_ident: IDENTIFIER { p($1)} { f($1)} { trace("constant_ident") }
+constant_ident: _ident_
 
-sign: PLUS { p("+") } | MINUS { p("-") }
+sign: _plus_ | _minus_
     ;
 
 /* sing_: / пусто / | sign  почему-то не работает в начале правила 
@@ -99,13 +93,13 @@ sign: PLUS { p("+") } | MINUS { p("-") }
 /* Определение константы */
 
 /* Определение типа */
-type_block: TYPE { alt($1, TYPE_TEMP) nd } type_definition_list possible_semicolon { dec } { f($1) }
+type_block: _type_ { nd } type_definition_list possible_semicolon { dec }
     ;
 
-type_definition_list: type_definition_list SEMICOLON { p(";") ns } type_definition | type_definition
+type_definition_list: type_definition_list _semicolon_ { ns } type_definition | type_definition
     ;
 
-type_definition: IDENTIFIER { p($1) } EQUAL { s p("=") s } type { f($1) }
+type_definition: _ident_ { s } _equal_ { s } type
     ;
 
 type: simple_type | pointer_type | structured_type
@@ -114,29 +108,25 @@ type: simple_type | pointer_type | structured_type
 simple_type: scalar_type | subrange_type | type_ident
     ;
 
-scalar_type: LPAREN { p("(") } ident_list RPAREN { p(")") }
+scalar_type: _lparen_ ident_list _rparen_
     ;
 
-ident_list: ident_list COMMA { p(",") s } IDENTIFIER { p($1) } { f($1) } | IDENTIFIER { p($1) } { f($1) }
+ident_list: ident_list _comma_ { s } _ident_ | _ident_
     ;
 
-subrange_type: constant POINTS { s p("..") s } constant
+subrange_type: constant { s } _points_ { s } constant
     ;
 
-structured_type: PACKED { alt($1, PACKED_TEMP) s } unpacked_structured_type | unpacked_structured_type
+structured_type: _packed_ { s } unpacked_structured_type | unpacked_structured_type
     ;
 
 unpacked_structured_type: array_type | record_type | file_type | set_type
     ;
 
-array_type: ARRAY { alt($1, ARRAY_TEMP) s } LBRACKET { p("[") } index_type_list RBRACKET { p("]") } { s } of { s } component_type
+array_type: _array_ { s } _lbracket_ index_type_list _rbracket_ { s } _of_ { s } component_type
     ;
 
-// формальное преобразование, чтобы можно было обратиться к of
-of: OF { alt($1, OF_TEMP) }
-    ;
-
-index_type_list: index_type_list COMMA { p(",") s } index_type | index_type
+index_type_list: index_type_list _comma_ { s } index_type | index_type
     ;
 
 index_type: simple_type
@@ -147,80 +137,149 @@ component_type: type
 
 /*  Тип записи */
 
-record_type: RECORD { alt($1, RECORD_TEMP) nd } field_list end {trace("record_type")}
+record_type: _record_ { nd } field_list { nu } _end_
     ;
 
-// формальное преобразование, чтобы можно было обратиться к end
-end: END { nu alt($1, END_TEMP) }
+field_list: fixed_part | fixed_part _semicolon_ { ns } variant_part | variant_part
     ;
 
-field_list: fixed_part | fixed_part SEMICOLON { p(";") ns } variant_part | variant_part
+fixed_part: fixed_part _semicolon_ { ns } record_section | record_section
     ;
 
-fixed_part: fixed_part SEMICOLON { p(";") ns } record_section | record_section {trace("fixed_part")}
+record_section: field_ident_list _colon_ { s } type
     ;
 
-record_section: field_ident_list {trace("field_ident_list")} COLON { p(":") s } type
+field_ident_list: field_ident_list _comma_ { s } field_ident | field_ident
     ;
 
-field_ident_list: field_ident_list COMMA { p(",") s } field_ident | field_ident
+field_ident: _ident_
     ;
 
-field_ident: IDENTIFIER { p($1) f($1) }
+variant_part: _case_ { s } tag_field { s } _colon_ { s } type_ident {s} _of_ { nd } variant_list { dec }
     ;
 
-variant_part: CASE { alt($1, CASE_TEMP) s } tag_field COLON { s p(":") s } type_ident {s} of { nd } variant_list { dec }
+variant_list: variant_list _semicolon_ { ns } variant | variant
     ;
 
-variant_list: variant_list SEMICOLON { p(";") ns } variant | variant
+variant: case_label_list _colon_ { s } _lparen_ { nd } field_list { nu } _rparen_ | case_label_list
     ;
 
-variant: case_label_list COLON LPAREN { p(": (") nd } field_list { nu } RPAREN { p(")") } | case_label_list
-    ;
-
-case_label_list: case_label_list COMMA { p(",") s } case_label | case_label
+case_label_list: case_label_list _comma_ { s } case_label | case_label
     ;
 
 case_label: unsigned_constant
     ;
 
-unsigned_constant: UNSIGNED_NUMBER { p($1) f($1) } | STRING { p($1) f($1) } | NIL { alt($1, NIL_TEMP) } | constant_ident
+unsigned_constant: _unsigned_number_ | _string_ | _nil_ | constant_ident
     ;
 
 /*  Тип записи */
 
-set_type: SET OF { alt($1, SET_TEMP) s alt($2, OF_TEMP) s } base_type
+set_type: _set_ { s } _of_ { s } base_type
     ;
 
 base_type: simple_type
     ;
 
-file_type: FILE_ OF { alt($1, FILE_TEMP) s alt($2, OF_TEMP) s }  type
+file_type: _file_ { s } _of_ { s } base_type  type
     ;
 
-pointer_type: CARET { p("^") } type_ident
+pointer_type: _caret_ type_ident
     ;
 
-tag_field: IDENTIFIER { p($1) } { f($1) }
+tag_field: _ident_
     ;
 
-type_ident: IDENTIFIER { p($1) f($1) }
+type_ident: _ident_
     ;
 
 /* Определение типа */
 
-/* Ключевые слова */
-const: CONST { alt($1, CONST_TEMP) }
+_ident_: IDENTIFIER { p($1) } { f($1) }
     ;
 
-semicolon: SEMICOLON { p(";") }
+_string_: STRING { p($1) } { f($1) }
+    ;
+
+_unsigned_number_: UNSIGNED_NUMBER { p($1)} { f($1) } 
+    ;
+
+/* Ключевые слова */
+
+_type_: TYPE { alt($1, TYPE_TEMP) } { f($1) }
+    ;
+
+const_: CONST { alt($1, CONST_TEMP) } { f($1) }
+    ;
+
+_packed_: PACKED { alt($1, PACKED_TEMP) } { f($1) }
+    ;
+
+_array_: ARRAY { alt($1, ARRAY_TEMP) } { f($1) }
+    ;
+
+_of_: OF { alt($1, OF_TEMP) } { f($1) }
+    ;
+
+_record_: RECORD { alt($1, RECORD_TEMP) } { f($1) }
+    ;
+
+_end_: END { alt($1, END_TEMP) } { f($1) }
+    ;
+
+_case_: CASE { alt($1, CASE_TEMP) } { f($1) }
+    ;
+
+_nil_: NIL { alt($1, NIL_TEMP) } { f($1) }
+    ;
+
+_set_: SET { alt($1, SET_TEMP) } { f($1) }
+    ;
+
+_file_: FILE_ { alt($1, FILE_TEMP) } { f($1) }
+    ;
+
+/* Ключевые слова */
+
+_semicolon_: SEMICOLON { p(";") }
     ;
 
 possible_semicolon: /* пусто */ { !WEAK && p(";") }    {trace("semicolon_false")}
-    | semicolon                                        {trace("semicolon_true")}
+    | _semicolon_                                       {trace("semicolon_true")}
     ;
 
-/* Ключевые слова */
+_equal_: EQUAL { p("=") }
+    ;
+
+_plus_: PLUS { p("+") }
+    ;
+
+_minus_: MINUS { p("-") }
+    ;
+
+_lparen_: LPAREN { p("(") }
+    ;
+
+_rparen_: RPAREN { p(")") }
+    ;
+
+_comma_: COMMA { p(",") }
+    ;
+
+_points_: POINTS { p("..") }
+    ;
+
+_lbracket_: LBRACKET { p("[") }
+    ;
+
+_rbracket_: RBRACKET { p("]") }
+    ;
+
+_colon_: COLON { p(":") }
+    ;
+
+_caret_: CARET { p("^") }
+    ;
 
 %%
 
