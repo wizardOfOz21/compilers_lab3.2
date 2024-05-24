@@ -1,7 +1,7 @@
 Type 
     Coords = Record x, y: INTEGER end;
 cOnst
-  MaxPoints = 100;
+  MaxPoints = 100
 type
   CoordsVector = array [1..MaxPoints] of Coords;
 

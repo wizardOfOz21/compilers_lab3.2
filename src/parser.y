@@ -73,7 +73,7 @@ block: type_block | constant_block
 
 /* Определение константы */
 
-constant_block: CONST { alt($1, CONST_TEMP) nd } constant_definition_list semicolon { p(";") dec }
+constant_block: const { nd } constant_definition_list possible_semicolon { dec }
     ;
 
 constant_definition_list: constant_definition_list SEMICOLON { p(";") ns } constant_definition | constant_definition
@@ -99,7 +99,7 @@ sign: PLUS { p("+") } | MINUS { p("-") }
 /* Определение константы */
 
 /* Определение типа */
-type_block: TYPE { alt($1, TYPE_TEMP) nd } type_definition_list semicolon { p(";") dec } { f($1) }
+type_block: TYPE { alt($1, TYPE_TEMP) nd } type_definition_list possible_semicolon { dec } { f($1) }
     ;
 
 type_definition_list: type_definition_list SEMICOLON { p(";") ns } type_definition | type_definition
@@ -207,12 +207,20 @@ tag_field: IDENTIFIER { p($1) } { f($1) }
 type_ident: IDENTIFIER { p($1) f($1) }
     ;
 
-semicolon: %empty {trace("semicolon_false")}
-    | SEMICOLON {trace("semicolon_true")}
-    ;
-
 /* Определение типа */
 
+/* Ключевые слова */
+const: CONST { alt($1, CONST_TEMP) }
+    ;
+
+semicolon: SEMICOLON { p(";") }
+    ;
+
+possible_semicolon: /* пусто */ { !WEAK && p(";") }    {trace("semicolon_false")}
+    | semicolon                                        {trace("semicolon_true")}
+    ;
+
+/* Ключевые слова */
 
 %%
 
@@ -230,6 +238,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool is_dev = false;
+    KEYWORDS_FORMAT = 1;
 
     char* arg;
     for (int i = 0; i < argc; ++i) {
@@ -238,7 +247,10 @@ int main(int argc, char *argv[]) {
             is_dev = true;
         }
         if (!strcmp(arg, "-k")) {
-            env[1] = 1;
+            KEYWORDS_FORMAT = 0;
+        }
+        if (!strcmp(arg, "-w")) {
+            WEAK = 1;
         }
     }
 

@@ -19,10 +19,13 @@
 #define nu dec n m; // \n up
 #define ns n m;     // \n straight
 
+#define KEYWORDS_FORMAT     env[1]
+#define WEAK                env[2]
+
 #define p(str) \
     printf("%s", str);
 
-#define alt(str, temp) printf("%s", env[1] ? temp : str);
+#define alt(str, temp) printf("%s", KEYWORDS_FORMAT ? temp : str);
 
 #define f(arg) free(arg);
 
