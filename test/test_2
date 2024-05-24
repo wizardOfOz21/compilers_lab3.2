@@ -1,0 +1,15 @@
+const Heigh = 480; Width = - B; Lines = 24; Columns = 80;const Heigh = 480; Width = - B; Lines = 24; Columns = 80;
+type
+  BaseColor = (red,green,blue,highlited);
+  Cd = a..-b;
+    b = c;
+
+List = packed record
+    value : Token;
+    next : ^List
+  end;
+
+  List = record
+    value : array [1..32, a] of CHAR;
+    next : ^List
+  end;

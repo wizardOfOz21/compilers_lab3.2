@@ -48,6 +48,12 @@ char spec_symbols_dev[] = {
     'N', 'T', '\\', '\'',
 };
 
+char* copy(char* s) {
+    char* res = (char*)malloc(strlen(s));
+    strcpy(res, s);
+    return res;
+}
+
 %}
 
 %x STRING_STATE
@@ -59,13 +65,13 @@ char spec_symbols_dev[] = {
 \(      return LPAREN;
 \)      return RPAREN;
 ,       return COMMA;
-\.\.    {print(".."); return POINTS;};
+\.\.    {trace(".."); return POINTS;};
 \^      return CARET;
 \+      return PLUS;
 -       return MINUS;
 \[      return LBRACKET;
 \]      return RBRACKET;
-=       {print(yytext); return EQUAL;};
+=       {trace(yytext); return EQUAL;};
 :       return COLON;
 ;       return SEMICOLON;
 
@@ -83,14 +89,16 @@ char spec_symbols_dev[] = {
 [Cc][Oo][Nn][Ss][Tt]        return CONST;
 
 \(\*.*\\*\)       // TODO: оставлять в коде комментарии
+\{.*\}
 
 [a-zA-Z]*                                { 
-                                                yylval->string = yytext;
-                                                print(yytext);
+                                                yylval->string = copy(yytext);
+                                                trace(yytext);
                                                 return IDENTIFIER;
                                           };
 [0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?       { 
-                                                yylval->string = yytext;
+                                                yylval->string = copy(yytext);
+                                                trace(yytext);
                                                 return UNSIGNED_NUMBER;
                                           };
 
