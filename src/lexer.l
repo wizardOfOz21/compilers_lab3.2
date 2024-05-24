@@ -9,7 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lexer.h"
+#include "config.h"
+
 #include "y.tab.h"  /* файл генерируется Bison’ом */
+
+#define reflect(arg) { \
+    yylval->string = copy(yytext); \
+    return arg; \
+} \
 
 #define YY_USER_ACTION \
   { \
@@ -48,7 +55,7 @@ char spec_symbols_dev[] = {
     'N', 'T', '\\', '\'',
 };
 
-char* copy(char* s) {
+char* copy(const char* s) {
     char* res = (char*)malloc(strlen(s));
     strcpy(res, s);
     return res;
@@ -75,23 +82,23 @@ char* copy(char* s) {
 :       return COLON;
 ;       return SEMICOLON;
 
-[Nn][Ii][Ll]                return NIL;
-[Pp][Aa][Cc][Kk][Ee][Dd]    return PACKED;
-[Oo][Ff]                    return OF;
-[Aa][Rr][Rr][Aa][Yy]        return ARRAY;
-[Ff][Ii][Ll][Ee]            return FILE_;
-[Ss][Ee][Tt]                return SET;
-[Rr][Ee][Cc][Oo][Rr][Dd]    return RECORD;
-[Ee][Nn][Dd]                return END;
-[Tt][Yy][Pp][Ee]            return TYPE;
-[Vv][Aa][Rr]                return VAR;
-[Cc][Aa][Ss][Ee]            return CASE;
-[Cc][Oo][Nn][Ss][Tt]        return CONST;
+[Nn][Ii][Ll]                reflect(NIL);
+[Pp][Aa][Cc][Kk][Ee][Dd]    reflect(PACKED);
+[Oo][Ff]                    reflect(OF);
+[Aa][Rr][Rr][Aa][Yy]        reflect(ARRAY);
+[Ff][Ii][Ll][Ee]            reflect(FILE_);
+[Ss][Ee][Tt]                reflect(SET);
+[Rr][Ee][Cc][Oo][Rr][Dd]    reflect(RECORD);
+[Ee][Nn][Dd]                reflect(END);
+[Tt][Yy][Pp][Ee]            reflect(TYPE);
+[Vv][Aa][Rr]                reflect(VAR);
+[Cc][Aa][Ss][Ee]            reflect(CASE);
+[Cc][Oo][Nn][Ss][Tt]        reflect(CONST);
 
 \(\*.*\\*\)       // TODO: оставлять в коде комментарии
 \{.*\}
 
-[a-zA-Z]*                                { 
+[a-zA-Z]*                                 { 
                                                 yylval->string = copy(yytext);
                                                 trace(yytext);
                                                 return IDENTIFIER;

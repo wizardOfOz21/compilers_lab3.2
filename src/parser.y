@@ -2,28 +2,8 @@
     #include <stdio.h>
     #include <string.h>
     #include "lexer.h"
-
-    #define margin() for (int i = 0; i < env[0]; ++i) printf("\t");
-
-    #define inc env[0]++;
-
-    #define dec env[0]--;
-
-    #define n printf("\n");
-
-    #define s printf(" ");
-
-    #define m margin();
-
-    #define nd inc n m; // \n down
-    #define nu dec n m; // \n up
-    #define ns n m;     // \n straight
-
-    #define p(str) \
-        printf("%s", str); \
-    
-    #define f(arg) free(arg);
-        
+    #include "config.h"
+    #include "format.h"
 %}
 
 %define api.pure
@@ -46,7 +26,18 @@
 %token COLON;
 %token SEMICOLON;
 
-%token NIL PACKED OF ARRAY FILE_ SET RECORD END TYPE VAR CASE CONST
+%token <string> NIL 
+%token <string> PACKED 
+%token <string> OF 
+%token <string> ARRAY 
+%token <string> FILE_ 
+%token <string> SET 
+%token <string> RECORD 
+%token <string> END 
+%token <string> VAR 
+%token <string> CASE 
+%token <string> CONST
+%token <string> TYPE
 
 %union {
     char* string;
@@ -82,7 +73,7 @@ block: type_block | constant_block
 
 /* Определение константы */
 
-constant_block: CONST { p("Const") nd } constant_definition_list semicolon { p(";") dec }
+constant_block: CONST { alt($1, CONST_TEMP) nd } constant_definition_list semicolon { p(";") dec }
     ;
 
 constant_definition_list: constant_definition_list SEMICOLON { p(";") ns } constant_definition | constant_definition
@@ -108,7 +99,7 @@ sign: PLUS { p("+") } | MINUS { p("-") }
 /* Определение константы */
 
 /* Определение типа */
-type_block: TYPE { p("Type") nd } type_definition_list semicolon { p(";") dec }
+type_block: TYPE { alt($1, TYPE_TEMP) nd } type_definition_list semicolon { p(";") dec } { f($1) }
     ;
 
 type_definition_list: type_definition_list SEMICOLON { p(";") ns } type_definition | type_definition
@@ -132,13 +123,17 @@ ident_list: ident_list COMMA { p(",") s } IDENTIFIER { p($1) } { f($1) } | IDENT
 subrange_type: constant POINTS { s p("..") s } constant
     ;
 
-structured_type: PACKED { p("packed") s } unpacked_structured_type | unpacked_structured_type
+structured_type: PACKED { alt($1, PACKED_TEMP) s } unpacked_structured_type | unpacked_structured_type
     ;
 
 unpacked_structured_type: array_type | record_type | file_type | set_type
     ;
 
-array_type: ARRAY { p("array") s } LBRACKET { p("[") } index_type_list RBRACKET { p("]") } OF { s p("of") s } component_type
+array_type: ARRAY { alt($1, ARRAY_TEMP) s } LBRACKET { p("[") } index_type_list RBRACKET { p("]") } { s } of { s } component_type
+    ;
+
+// формальное преобразование, чтобы можно было обратиться к of
+of: OF { alt($1, OF_TEMP) }
     ;
 
 index_type_list: index_type_list COMMA { p(",") s } index_type | index_type
@@ -152,7 +147,11 @@ component_type: type
 
 /*  Тип записи */
 
-record_type: RECORD { p("record") nd } field_list END { nu p("end") } {trace("record_type")}
+record_type: RECORD { alt($1, RECORD_TEMP) nd } field_list end {trace("record_type")}
+    ;
+
+// формальное преобразование, чтобы можно было обратиться к end
+end: END { nu alt($1, END_TEMP) }
     ;
 
 field_list: fixed_part | fixed_part SEMICOLON { p(";") ns } variant_part | variant_part
@@ -170,7 +169,7 @@ field_ident_list: field_ident_list COMMA { p(",") s } field_ident | field_ident
 field_ident: IDENTIFIER { p($1) f($1) }
     ;
 
-variant_part: CASE { p("case") s } tag_field COLON { s p(":") s } type_ident OF { s p("of") nd } variant_list {trace("variant_part")} { dec }
+variant_part: CASE { alt($1, CASE_TEMP) s } tag_field COLON { s p(":") s } type_ident {s} of { nd } variant_list { dec }
     ;
 
 variant_list: variant_list SEMICOLON { p(";") ns } variant | variant
@@ -185,18 +184,18 @@ case_label_list: case_label_list COMMA { p(",") s } case_label | case_label
 case_label: unsigned_constant
     ;
 
-unsigned_constant: UNSIGNED_NUMBER { p($1) f($1) } | STRING { p($1) f($1) } | NIL { p("nil") } | constant_ident
+unsigned_constant: UNSIGNED_NUMBER { p($1) f($1) } | STRING { p($1) f($1) } | NIL { alt($1, NIL_TEMP) } | constant_ident
     ;
 
 /*  Тип записи */
 
-set_type: SET OF { p("set of ") s } base_type
+set_type: SET OF { alt($1, SET_TEMP) s alt($2, OF_TEMP) s } base_type
     ;
 
 base_type: simple_type
     ;
 
-file_type: FILE_ OF { p("file of ") s }  type
+file_type: FILE_ OF { alt($1, FILE_TEMP) s alt($2, OF_TEMP) s }  type
     ;
 
 pointer_type: CARET { p("^") } type_ident
@@ -232,8 +231,15 @@ int main(int argc, char *argv[]) {
 
     bool is_dev = false;
 
-    if (argc > 2 && !strcmp(argv[2], "dev")) {
-        is_dev = true;
+    char* arg;
+    for (int i = 0; i < argc; ++i) {
+        arg = argv[i];
+        if (!strcmp(arg, "dev")) {
+            is_dev = true;
+        }
+        if (!strcmp(arg, "-k")) {
+            env[1] = 1;
+        }
     }
 
     init_scanner(input, &scanner, &extra, is_dev);

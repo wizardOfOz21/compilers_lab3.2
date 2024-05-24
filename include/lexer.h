@@ -9,10 +9,6 @@
 typedef void *yyscan_t;
 #endif /* YY_TYPEDEF_YY_SCANNER_T */
 
-#define DEBUG false  //  трассировка
-#define trace(str) DEBUG && printf("%s\n", str);
-
-#define MAX_STRING_LENGTH 1000
 #define NEWLINE 0
 #define TAB 1
 #define SLASH 2

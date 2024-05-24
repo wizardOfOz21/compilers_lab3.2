@@ -18,14 +18,15 @@ gcc: ${BUILD_DIR}/lex.yy.c ${BUILD_DIR}/y.tab.h ${BUILD_DIR}/y.tab.c
 	gcc -o ${BUILD_DIR}/prog ${BUILD_DIR}/*.c -I${BUILD_DIR} -I${INCLUDE_DIR} -w
 
 run: input
-	./${BUILD_DIR}/prog input ${m}
+	./${BUILD_DIR}/prog input ${ARGS}
 
 crun: build run
 
 tests:
-	./${BUILD_DIR}/prog ${TEST_DIR}/test_${n} ${m} > out
+	./${BUILD_DIR}/prog ${TEST_DIR}/test_${n} ${ARGS} > out
 
 ctests: build tests
 
 # make ctests n=1 – запуск теста 1
 # make crun – запуск на файле input
+# -k – выравнивать регистр ключевых слов
