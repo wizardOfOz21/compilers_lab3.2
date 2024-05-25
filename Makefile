@@ -1,13 +1,13 @@
 TESTS = $(shell ls test/*)
-SRC_DIR 		= src
-BUILD_DIR 		= build
+SRC_DIR 		= src${w}
+BUILD_DIR 		= build${w}
 INCLUDE_DIR 	= include
-PARSER_SRC 		= ${SRC_DIR}/parser.y
-LEXER_SRC 		= ${SRC_DIR}/lexer.l
-LEXER_OUT 		= ${BUILD_DIR}/lex.yy.c
-PARSER_OUT_H	= ${BUILD_DIR}/y.tab.h
-PARSER_OUT		= ${BUILD_DIR}/y.tab.c
-PROG			= ${BUILD_DIR}/prog
+PARSER_SRC 		= ${SRC_DIR}/parser${w}.y
+LEXER_SRC 		= ${SRC_DIR}/lexer${w}.l
+LEXER_OUT 		= ${BUILD_DIR}/lex${w}.yy.c
+PARSER_OUT_H	= ${BUILD_DIR}/y${w}.tab.h
+PARSER_OUT		= ${BUILD_DIR}/y${w}.tab.c
+PROG			= ${BUILD_DIR}/prog${w}
 TEST_N			= ${TEST_DIR}/test_${n}
 
 TEST_DIR 		= test
