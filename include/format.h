@@ -1,13 +1,15 @@
 #ifndef FORMAT_H
 #define FORMAT_H
 
+#include "config.h"
+
 #define margin()                     \
-    for (int i = 0; i < env[0]; ++i) \
+    for (int i = 0; i < MARGIN; ++i) \
         printf("\t");
 
-#define inc env[0]++;
+#define inc MARGIN++;
 
-#define dec env[0]--;
+#define dec MARGIN--;
 
 #define n printf("\n");
 
@@ -17,10 +19,7 @@
 
 #define nd inc n m; // \n down
 #define nu dec n m; // \n up
-#define ns n m;     // \n straight
-
-#define KEYWORDS_FORMAT     env[1]
-#define WEAK                env[2]
+#define ns     n m; // \n straight
 
 #define p(str) \
     printf("%s", str);

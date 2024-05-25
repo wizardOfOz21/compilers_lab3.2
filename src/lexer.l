@@ -13,6 +13,12 @@
 
 #include "y.tab.h"  /* файл генерируется Bison’ом */
 
+#define margin()                     \
+    for (int i = 0; i < yyextra->MARGIN; ++i) \
+        printf("\t");
+
+#define m margin();
+
 #define reflect(arg) { \
     yylval->string = copy(yytext); \
     return arg; \
@@ -67,7 +73,9 @@ char* copy(const char* s) {
 
 %%
 
-[\r\t\n ]+
+\n
+
+[\r\t ]+
 
 \(      return LPAREN;
 \)      return RPAREN;
@@ -95,7 +103,7 @@ char* copy(const char* s) {
 [Cc][Aa][Ss][Ee]            reflect(CASE);
 [Cc][Oo][Nn][Ss][Tt]        reflect(CONST);
 
-\(\*.*\\*\)       // TODO: оставлять в коде комментарии
+\(\*.*\\*\) // TODO: оставлять в коде комментарии
 \{.*\}
 
 [a-zA-Z]*                                 { 
@@ -156,12 +164,14 @@ char* copy(const char* s) {
 
 %%
 
-void init_scanner(FILE *input, yyscan_t *scanner, struct Extra *extra, bool is_dev) {
+void init_scanner(FILE *input, yyscan_t *scanner, struct Extra *extra, long* env) {
     extra->continued = false;
     extra->string_index = 0;
     extra->cur_line = 1;
     extra->cur_column = 1;
-    if (is_dev) {
+    extra->env = env;
+
+    if (DEV_MODE) {
         extra->spec_symbols = spec_symbols_dev;
     } else {
         extra->spec_symbols = spec_symbols_prod;

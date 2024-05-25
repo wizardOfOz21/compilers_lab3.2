@@ -155,7 +155,7 @@ field_ident_list: field_ident_list _comma_ { s } field_ident | field_ident
 field_ident: _ident_
     ;
 
-variant_part: _case_ { s } tag_field { s } _colon_ { s } type_ident {s} _of_ { nd } variant_list { dec }
+variant_part: _case_ { s } tag_field { s } _colon_ { s } type_ident { s } _of_ { nd } variant_list { dec }
     ;
 
 variant_list: variant_list _semicolon_ { ns } variant | variant
@@ -296,24 +296,23 @@ int main(int argc, char *argv[]) {
         input = stdin;
     }
 
-    bool is_dev = false;
     KEYWORDS_FORMAT = 1;
 
     char* arg;
     for (int i = 0; i < argc; ++i) {
         arg = argv[i];
-        if (!strcmp(arg, "dev")) {
-            is_dev = true;
+        if (!strcmp(arg, "-d")) {
+            DEV_MODE = 1;
         }
         if (!strcmp(arg, "-k")) {
             KEYWORDS_FORMAT = 0;
         }
         if (!strcmp(arg, "-w")) {
-            WEAK = 1;
+            WEAK = 1; // отвечает только за расстановку необязательных точек с запятой
         }
     }
 
-    init_scanner(input, &scanner, &extra, is_dev);
+    init_scanner(input, &scanner, &extra, env);
     yyparse(scanner, env);
     destroy_scanner(scanner);
 

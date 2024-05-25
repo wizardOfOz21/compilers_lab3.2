@@ -23,9 +23,10 @@ struct Extra {
     int string_index;
     int cur_line;
     int cur_column;
+    long* env;
 };
 
-void init_scanner(FILE *input, yyscan_t *scanner, struct Extra *extra, bool is_dev);
+void init_scanner(FILE *input, yyscan_t *scanner, struct Extra *extra,  long* flags);
 void destroy_scanner(yyscan_t);
 
 #endif /* LEXER_H */
