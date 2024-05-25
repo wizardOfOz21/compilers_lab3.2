@@ -101,7 +101,7 @@ char* copy(const char* s) {
 [Cc][Aa][Ss][Ee]            reflect(CASE);
 [Cc][Oo][Nn][Ss][Tt]        reflect(CONST);
 
-\(\*.*\\*\) // TODO: оставлять в коде комментарии
+\(\*.*\*\)
 \{.*\}
 
 [a-zA-Z]*                                 { 
