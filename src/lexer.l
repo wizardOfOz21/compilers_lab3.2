@@ -73,9 +73,7 @@ char* copy(const char* s) {
 
 %%
 
-\n
-
-[\r\t ]+
+[\r\t\n ]+
 
 \(      return LPAREN;
 \)      return RPAREN;

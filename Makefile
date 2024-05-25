@@ -29,7 +29,7 @@ run: input
 crun: build run
 
 tests:
-	./${PROG} ${TEST_N} ${ARGS} > out
+	./${PROG} ${TEST_N} ${ARGS} > out${w}
 
 ctests: build tests
 
