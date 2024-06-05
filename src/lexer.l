@@ -104,7 +104,7 @@ char* copy(const char* s) {
 \(\*.*\*\)
 \{.*\}
 
-[a-zA-Z]*                                 { 
+[a-zA-Z][a-zA-Z0-9]*                      { 
                                                 yylval->string = copy(yytext);
                                                 trace(yytext);
                                                 return IDENTIFIER;

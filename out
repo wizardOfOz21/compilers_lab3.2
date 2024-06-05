@@ -1,7 +1,3 @@
-flex  -obuild/lex.yy.c src/lexer.l
-bison src/parser.y -Hbuild/y.tab.h -obuild/y.tab.c -Wconflicts-sr -Wconflicts-rr -Wcounterexamples;
-gcc -o build/prog build/*.c -Ibuild -Iinclude -w
-./build/prog input 
 Type
 	Coords = Record
 		x, y: INTEGER

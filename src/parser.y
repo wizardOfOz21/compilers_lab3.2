@@ -87,7 +87,7 @@ constant_ident: _ident_
 sign: _plus_ | _minus_
     ;
 
-/* sing_: / пусто / | sign  почему-то не работает в начале правила 
+/* sign_: / пусто / | sign  почему-то не работает в начале правила 
     ; */
 
 /* Определение константы */
@@ -181,7 +181,7 @@ set_type: _set_ { s } _of_ { s } base_type
 base_type: simple_type
     ;
 
-file_type: _file_ { s } _of_ { s } base_type  type
+file_type: _file_ { s } _of_ { s } type 
     ;
 
 pointer_type: _caret_ type_ident
